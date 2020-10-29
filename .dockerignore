@@ -7,11 +7,9 @@ docker-compose.yml
 install.sh
 
 # App
-src/*
-!.gitignore
-!src/wp-content/mu-plugins/
-!src/wp-content/plugins/
-!src/wp-content/themes/
+vendor
+node_modules
+src/wp-conent/uploads
 
 # Files
 *.log
