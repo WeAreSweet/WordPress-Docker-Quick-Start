@@ -1,0 +1,19 @@
+# Ide
+.idea
+
+# Etx
+etc/docker
+docker-compose.yml
+install.sh
+
+# App
+src/*
+!.gitignore
+!src/wp-content/mu-plugins/
+!src/wp-content/plugins/
+!src/wp-content/themes/
+
+# Files
+*.log
+*.sql
+*.sqlite

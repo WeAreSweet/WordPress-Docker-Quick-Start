@@ -1,0 +1,62 @@
+version: '3.7'
+
+services:
+  web:
+    image: nginx:alpine
+    working_dir: /src
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.<site>.rule=Host(`<site>.local.designbysweet.com`)"
+    volumes:
+      - ./etc/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./src:/src:cached
+    networks:
+      - internal
+      - traefik
+  app:
+    build:
+      context: .
+      dockerfile: ./etc/docker/app.dockerfile
+    user: www-data
+    working_dir: /src
+    volumes:
+      - ./etc/php/php.ini:/usr/local/etc/php/conf.d/00_php.ini:ro
+      - ./src:/src:cached
+    networks:
+      - internal
+      - local-mysql
+  tunnel:
+    image: alpine/git
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    entrypoint: ssh -v -R "tunnel.designbysweet.com":80:web:80 -R "<site>.tunnel.designbysweet.com":80:web:80 -R "${USER}-<site>.tunnel.designbysweet.com":80:web:80 plan@ssh.localhost.run -y
+    volumes:
+      - ~/.ssh:/root/.ssh
+    networks:
+      - internal
+  node:
+    image: node:12
+    working_dir: /src
+    command: npm run watch
+    volumes:
+      - ./src:/src:delegated
+  redis:
+    image: redis
+    command: redis-server
+    volumes:
+      - redis:/data:delegated
+    networks:
+      - internal
+  install:
+    image: wordpress:cli
+    networks:
+      - local-mysql
+volumes:
+  redis:
+networks:
+  internal:
+  traefik:
+    external: true
+  local-mysql:
+    external: true
